@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using ICSharpCode.Core;
-using MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Properties;
 
 namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands
 {
-    /// <summary>
-    ///     Represents the command that is executed automatically when IDE starts.
-    /// </summary>
-    public sealed class StartupCommand : AbstractMenuCommand
+    public sealed class RemoveUnwantedFilesCommand : AbstractMenuCommand
     {
         #region Public Methods
 
@@ -18,7 +15,9 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands
         /// </summary>
         public override void Run()
         {
-            ResourceService.RegisterNeutralImages(Resources.ResourceManager);
+            MessageBox.Show("Here will open the 'Remove unwanted files' dialog...");
+
+            //// TODO [vmcl] Implement RemoveUnwantedFilesCommand.Run
         }
 
         #endregion

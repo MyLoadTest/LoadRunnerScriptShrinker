@@ -1,7 +1,7 @@
 ﻿<AddIn name="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn"
-       author="MyLoadTest"
-       url="http://www.myloadtest.com/"
-       description="A VuGen add-in for removing unwanted files from LoadRunner scripts">
+        author="MyLoadTest"
+        url="http://www.myloadtest.com/"
+        description="A VuGen add-in for removing unwanted files from LoadRunner scripts">
     <Runtime>
         <Import assembly="Omnifactotum.dll" />
         <Import assembly="MyLoadTest.LoadRunnerScriptShrinker.dll" />
@@ -9,14 +9,49 @@
     </Runtime>
 
     <Manifest>
-        <Identity name="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.addin"
-                  version="@MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.dll" />
-        <Dependency addin="SharpDevelop"
-                    version="4.1" />
+        <Identity name="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn"
+                version="@MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.dll" />
+        <Dependency addin="SharpDevelop" version="4.1" />
+        <Dependency addin="RecordingAddin" version="12.02.0.0" />
     </Manifest>
 
     <Path name="/Workspace/Autostart">
         <Class id="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Startup"
-               class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.StartupCommand" />
+                class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.StartupCommand" />
+    </Path>
+
+    <Path name="/SharpDevelop/Workbench/ToolBar/Standard">
+        <ComplexCondition action="Disable">
+            <And>
+                <Condition name="VuGenProjectActive" />
+                <Condition name="StateIsDesign" />
+                <Condition name="CanModifyActiveScript" />
+            </And>
+
+            <ToolbarItem id="LoadRunnerScriptShrinker_Execute"
+                    insertafter="Toolbar_Regeneration"
+                    insertbefore="Toolbar_RecordingOption"
+                    icon="RemoveUnwantedFilesIcon"
+                    tooltip="Remove unwanted files"
+                    class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.RemoveUnwantedFilesCommand" />
+        </ComplexCondition>
+    </Path>
+
+    <Path name="/SharpDevelop/Workbench/MainMenu/Tools">
+        <ComplexCondition action="Disable">
+            <And>
+                <Condition name="VuGenProjectActive" />
+                <Condition name="StateIsDesign" />
+                <Condition name="CanModifyActiveScript" />
+            </And>
+
+            <MenuItem id="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.RemoveUnwantedFiles"
+                    type="Item"
+                    insertafter="VugenCompare"
+                    insertbefore="LastSeparator"
+                    icon="RemoveUnwantedFilesIcon"
+                    label="Remove Unwanted Files..."
+                    class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.RemoveUnwantedFilesCommand" />
+        </ComplexCondition>
     </Path>
 </AddIn>
