@@ -1,0 +1,22 @@
+﻿<AddIn name="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn"
+       author="MyLoadTest"
+       url="http://www.myloadtest.com/"
+       description="A VuGen add-in for removing unwanted files from LoadRunner scripts">
+    <Runtime>
+        <Import assembly="Omnifactotum.dll" />
+        <Import assembly="MyLoadTest.LoadRunnerScriptShrinker.dll" />
+        <Import assembly="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.dll" />
+    </Runtime>
+
+    <Manifest>
+        <Identity name="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.addin"
+                  version="@MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.dll" />
+        <Dependency addin="SharpDevelop"
+                    version="4.1" />
+    </Manifest>
+
+    <Path name="/Workspace/Autostart">
+        <Class id="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Startup"
+               class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.StartupCommand" />
+    </Path>
+</AddIn>
