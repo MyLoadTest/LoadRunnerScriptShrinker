@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Input;
 using MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands;
 using Omnifactotum.Annotations;
+using ICommand = System.Windows.Input.ICommand;
 
 namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 {
@@ -46,19 +46,24 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             WpfHelper.For<RemoveUnwantedFilesWindowViewModel>.RegisterReadOnlyDependencyProperty(
                 obj => obj.CancelCommand);
 
+        private static readonly PropertyPersistor<RemoveUnwantedFilesWindowViewModel> PropertyPersistor =
+            CreateAndInitializePropertyPersistor();
+
         #endregion
 
         #region Constructors
 
         public RemoveUnwantedFilesWindowViewModel()
         {
-            OnScriptPathChanged();
-
             OkCommand = new RelayCommand(
                 obj => ExecuteLogic(),
                 obj => ShouldRemoveRecordingLogs || ShouldRemoveReplayLogs);
 
             CancelCommand = new RelayCommand(obj => RaiseActionExecuted(false, 0, null));
+
+            OnScriptPathChanged();
+
+            PropertyPersistor.LoadProperties(this);
         }
 
         #endregion
@@ -109,7 +114,8 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return (bool)GetValue(ShouldRemoveRecordingLogsProperty);
             }
 
-            set
+            [UsedImplicitly]
+            private set
             {
                 SetValue(ShouldRemoveRecordingLogsProperty, value);
             }
@@ -135,7 +141,8 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return (bool)GetValue(ShouldRemoveReplayLogsProperty);
             }
 
-            set
+            [UsedImplicitly]
+            private set
             {
                 SetValue(ShouldRemoveReplayLogsProperty, value);
             }
@@ -183,6 +190,15 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
         #endregion
 
         #region Private Methods
+
+        private static PropertyPersistor<RemoveUnwantedFilesWindowViewModel> CreateAndInitializePropertyPersistor()
+        {
+            var propertyPersistor = new PropertyPersistor<RemoveUnwantedFilesWindowViewModel>();
+            propertyPersistor.RegisterProperty(obj => obj.ShouldRemoveRecordingLogs);
+            propertyPersistor.RegisterProperty(obj => obj.ShouldRemoveReplayLogs);
+
+            return propertyPersistor;
+        }
 
         private static void OnScriptPathChangedInternal(DependencyObject obj, DependencyPropertyChangedEventArgs args)
         {
@@ -370,6 +386,8 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
         private void ExecuteLogic()
         {
+            PropertyPersistor.SaveProperties(this);
+
             if (ScriptPath.IsNullOrWhiteSpace())
             {
                 RaiseActionExecuted(true, 0, null);

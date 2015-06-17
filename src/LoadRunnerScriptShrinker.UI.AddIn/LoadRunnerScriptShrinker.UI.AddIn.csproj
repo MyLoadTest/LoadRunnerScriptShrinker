@@ -87,6 +87,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="PropertyPersistor.cs" />
     <Compile Include="RemoveUnwantedFilesWindow.xaml.cs">
       <DependentUpon>RemoveUnwantedFilesWindow.xaml</DependentUpon>
     </Compile>
