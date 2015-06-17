@@ -17,7 +17,7 @@
 
     <Path name="/Workspace/Autostart">
         <Class id="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Startup"
-                class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.StartupCommand" />
+                class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.HostCommands.StartupCommand" />
     </Path>
 
     <Path name="/SharpDevelop/Workbench/ToolBar/Standard">
@@ -33,7 +33,7 @@
                     insertbefore="Toolbar_RecordingOption"
                     icon="RemoveUnwantedFilesIcon"
                     tooltip="Remove unwanted files"
-                    class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.RemoveUnwantedFilesCommand" />
+                    class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.HostCommands.RemoveUnwantedFilesCommand" />
         </ComplexCondition>
     </Path>
 
@@ -51,7 +51,7 @@
                     insertbefore="LastSeparator"
                     icon="RemoveUnwantedFilesIcon"
                     label="Remove Unwanted Files..."
-                    class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands.RemoveUnwantedFilesCommand" />
+                    class="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.HostCommands.RemoveUnwantedFilesCommand" />
         </ComplexCondition>
     </Path>
 </AddIn>

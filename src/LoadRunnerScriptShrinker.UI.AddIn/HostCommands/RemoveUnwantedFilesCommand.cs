@@ -6,7 +6,7 @@ using HP.LR.VuGen.ServiceCore;
 using HP.LR.VuGen.ServiceCore.Interfaces;
 using ICSharpCode.Core;
 
-namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands
+namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.HostCommands
 {
     public sealed class RemoveUnwantedFilesCommand : AbstractMenuCommand
     {

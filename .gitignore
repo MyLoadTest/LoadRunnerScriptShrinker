@@ -4,6 +4,7 @@ obj/
 _Output_/
 *.suo
 *.csproj.user
+*.DotSettings.user
 build*.log
 *.log
 _ReSharper*

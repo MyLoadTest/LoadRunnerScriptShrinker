@@ -4,25 +4,27 @@
         xmlns:self="clr-namespace:MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn"
         Title="Remove Unwanted Files" MinWidth="400" MinHeight="163" ResizeMode="NoResize" ShowInTaskbar="False"
         SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Margin="0"
+        Icon="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/RemoveUnwantedFilesIcon.ico"
         FocusManager.FocusedElement="{Binding ElementName=ScriptPathTextBox}">
     <Window.DataContext>
         <self:RemoveUnwantedFilesWindowViewModel x:Name="ViewModel" />
     </Window.DataContext>
     <Window.Resources>
-        <Style TargetType="{x:Type Label}">
-            <Setter Property="Margin" Value="0,2,0,2" />
+        <Style x:Key="ElementStyle" TargetType="{x:Type FrameworkElement}">
+            <Setter Property="Margin" Value="5,1,5,1" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="ControlStyle" BasedOn="{StaticResource ElementStyle}" TargetType="{x:Type Control}">
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style x:Key="InnerElementStyle" TargetType="{x:Type FrameworkElement}">
+            <Setter Property="Margin" Value="0,0,0,0" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-        <Style TargetType="{x:Type TextBox}">
-            <Setter Property="Margin" Value="0,2,0,2" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="{x:Type CheckBox}">
-            <Setter Property="Margin" Value="0,2,0,2" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Center" />
+        <Style x:Key="InnerControlStyle" BasedOn="{StaticResource InnerElementStyle}" TargetType="{x:Type Control}">
+            <Setter Property="Padding" Value="0" />
         </Style>
         <Style TargetType="{x:Type Separator}">
             <Setter Property="Margin" Value="0,5,0,5" />
@@ -50,29 +52,37 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Content="Script" />
-        <TextBox Grid.Row="0" Grid.Column="1" Name="ScriptPathTextBox" Text="{Binding ScriptPath,Mode=OneWay}"
-                IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="False" MaxLines="1"
-                Background="{x:Static SystemColors.InactiveCaptionBrush}" />
+        <Label Grid.Row="0" Grid.Column="0" Content="_Script" Target="{Binding ElementName=ScriptPathTextBox}"
+                Style="{StaticResource ControlStyle}" />
+        <TextBox Grid.Row="0" Grid.Column="1" Name="ScriptPathTextBox" Style="{StaticResource ControlStyle}"
+                Text="{Binding ScriptPath,Mode=OneWay}" IsReadOnly="True" IsReadOnlyCaretVisible="True"
+                TextWrapping="NoWrap" AcceptsReturn="False"
+                MaxLines="1" Background="{x:Static SystemColors.InactiveCaptionBrush}" />
 
         <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                IsChecked="{Binding ShouldRemoveRecordingLogs,Mode=TwoWay}">
+                IsChecked="{Binding ShouldRemoveRecordingLogs,Mode=TwoWay}"
+                Style="{StaticResource ControlStyle}">
             <CheckBox.Content>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Remove Recording logs (size: " />
-                    <TextBlock Text="{Binding RecordingLogSizeString}" FontWeight="Bold" />
-                    <TextBlock Text=")" />
+                    <Label Content="Remove _Recording logs (size: " Style="{StaticResource InnerControlStyle}"
+                            Target="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=CheckBox}}" />
+                    <TextBlock Text="{Binding RecordingLogSizeString}" Style="{StaticResource InnerElementStyle}"
+                            FontWeight="Bold" />
+                    <TextBlock Text=")" Style="{StaticResource InnerElementStyle}" />
                 </StackPanel>
             </CheckBox.Content>
         </CheckBox>
 
         <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                IsChecked="{Binding ShouldRemoveReplayLogs,Mode=TwoWay}">
+                IsChecked="{Binding ShouldRemoveReplayLogs,Mode=TwoWay}"
+                Style="{StaticResource ControlStyle}">
             <CheckBox.Content>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Remove Replay logs (size: " />
-                    <TextBlock Text="{Binding ReplayLogSizeString}" FontWeight="Bold" />
-                    <TextBlock Text=")" />
+                    <Label Content="Remove Re_play logs (size: " Style="{StaticResource InnerControlStyle}"
+                            Target="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=CheckBox}}" />
+                    <TextBlock Text="{Binding ReplayLogSizeString}" FontWeight="Bold"
+                            Style="{StaticResource InnerElementStyle}" />
+                    <TextBlock Text=")" Style="{StaticResource InnerElementStyle}" />
                 </StackPanel>
             </CheckBox.Content>
         </CheckBox>
@@ -81,8 +91,8 @@
 
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal"
                 HorizontalAlignment="Right">
-            <Button Content="OK" />
-            <Button Content="Cancel" Margin="10,0,0,0" />
+            <Button Content="OK" IsDefault="True" Command="{Binding OkCommand}" />
+            <Button Content="Cancel" Margin="10,0,0,0" IsCancel="True" Command="{Binding CancelCommand}" />
         </StackPanel>
     </Grid>
 </Window>

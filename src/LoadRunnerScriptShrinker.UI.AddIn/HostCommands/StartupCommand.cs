@@ -4,7 +4,7 @@ using System.Linq;
 using ICSharpCode.Core;
 using MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Properties;
 
-namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands
+namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.HostCommands
 {
     /// <summary>
     ///     Represents the command that is executed automatically when IDE starts.

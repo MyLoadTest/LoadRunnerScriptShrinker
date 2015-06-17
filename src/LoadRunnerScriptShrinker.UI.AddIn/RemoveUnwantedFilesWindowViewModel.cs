@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Input;
+using MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands;
 using Omnifactotum.Annotations;
 
 namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
@@ -18,7 +22,8 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
         public static readonly DependencyProperty ShouldRemoveRecordingLogsProperty =
             WpfHelper.For<RemoveUnwantedFilesWindowViewModel>.RegisterDependencyProperty(
-                obj => obj.ShouldRemoveRecordingLogs);
+                obj => obj.ShouldRemoveRecordingLogs,
+                new PropertyMetadata(OnShouldRemoveRecordingLogsChangedInternal));
 
         public static readonly DependencyProperty RecordingLogSizeStringProperty =
             WpfHelper.For<RemoveUnwantedFilesWindowViewModel>.RegisterDependencyProperty(
@@ -26,11 +31,20 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
         public static readonly DependencyProperty ShouldRemoveReplayLogsProperty =
             WpfHelper.For<RemoveUnwantedFilesWindowViewModel>.RegisterDependencyProperty(
-                obj => obj.ShouldRemoveReplayLogs);
+                obj => obj.ShouldRemoveReplayLogs,
+                new PropertyMetadata(OnShouldRemoveReplayLogsChangedInternal));
 
         public static readonly DependencyProperty ReplayLogSizeStringProperty =
             WpfHelper.For<RemoveUnwantedFilesWindowViewModel>.RegisterDependencyProperty(
                 obj => obj.ReplayLogSizeString);
+
+        private static readonly DependencyPropertyKey OkCommandPropertyKey =
+            WpfHelper.For<RemoveUnwantedFilesWindowViewModel>.RegisterReadOnlyDependencyProperty(
+                obj => obj.OkCommand);
+
+        private static readonly DependencyPropertyKey CancelCommandPropertyKey =
+            WpfHelper.For<RemoveUnwantedFilesWindowViewModel>.RegisterReadOnlyDependencyProperty(
+                obj => obj.CancelCommand);
 
         #endregion
 
@@ -39,11 +53,41 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
         public RemoveUnwantedFilesWindowViewModel()
         {
             OnScriptPathChanged();
+
+            OkCommand = new RelayCommand(
+                obj => ExecuteLogic(),
+                obj => ShouldRemoveRecordingLogs || ShouldRemoveReplayLogs);
+
+            CancelCommand = new RelayCommand(obj => RaiseActionExecuted(false, 0, null));
         }
 
         #endregion
 
+        #region Events
+
+        public event Action<bool, long, Exception> ActionExecuted;
+
+        #endregion
+
         #region Public Properties
+
+        public static DependencyProperty OkCommandProperty
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return OkCommandPropertyKey.DependencyProperty;
+            }
+        }
+
+        public static DependencyProperty CancelCommandProperty
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return CancelCommandPropertyKey.DependencyProperty;
+            }
+        }
 
         public string ScriptPath
         {
@@ -110,6 +154,32 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             }
         }
 
+        public ICommand OkCommand
+        {
+            get
+            {
+                return (ICommand)GetValue(OkCommandProperty);
+            }
+
+            private set
+            {
+                SetValue(OkCommandPropertyKey, value);
+            }
+        }
+
+        public ICommand CancelCommand
+        {
+            get
+            {
+                return (ICommand)GetValue(CancelCommandProperty);
+            }
+
+            private set
+            {
+                SetValue(CancelCommandPropertyKey, value);
+            }
+        }
+
         #endregion
 
         #region Private Methods
@@ -117,6 +187,20 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
         private static void OnScriptPathChangedInternal(DependencyObject obj, DependencyPropertyChangedEventArgs args)
         {
             ((RemoveUnwantedFilesWindowViewModel)obj.EnsureNotNull()).OnScriptPathChanged();
+        }
+
+        private static void OnShouldRemoveRecordingLogsChangedInternal(
+            DependencyObject obj,
+            DependencyPropertyChangedEventArgs args)
+        {
+            ((RemoveUnwantedFilesWindowViewModel)obj.EnsureNotNull()).OnShouldRemoveRecordingLogsChanged();
+        }
+
+        private static void OnShouldRemoveReplayLogsChangedInternal(
+            DependencyObject obj,
+            DependencyPropertyChangedEventArgs args)
+        {
+            ((RemoveUnwantedFilesWindowViewModel)obj.EnsureNotNull()).OnShouldRemoveReplayLogsChanged();
         }
 
         private static FileSystemInfo[] GetFileSystemObjects(
@@ -169,7 +253,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             return fileSystemInfoMap.Values.ToArray();
         }
 
-        private static FileSystemInfo[] GetRecordLogItems([NotNull] string scriptDirectory)
+        private static FileSystemInfo[] GetRecordingLogItems([NotNull] string scriptDirectory)
         {
             return GetFileSystemObjects(
                 scriptDirectory,
@@ -200,6 +284,47 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             return fileSystemInfos.Count == 0 ? 0 : fileSystemInfos.OfType<FileInfo>().Sum(obj => obj.Length);
         }
 
+        private static void DeleteFile(FileInfo info)
+        {
+            info.Refresh();
+            if (!info.Exists)
+            {
+                return;
+            }
+
+            info.Attributes = FileAttributes.Normal;
+            info.Delete();
+        }
+
+        private static void DeleteDirectory(DirectoryInfo info)
+        {
+            info.Refresh();
+            if (!info.Exists)
+            {
+                return;
+            }
+
+            info.Delete(true);
+        }
+
+        private static void DeleteItems([NotNull] ICollection<FileSystemInfo> fileSystemInfos)
+        {
+            var fileInfos = fileSystemInfos.OfType<FileInfo>().ToArray();
+            fileInfos.DoForEach(DeleteFile);
+
+            var directoryInfos = fileSystemInfos.OfType<DirectoryInfo>().ToArray();
+            directoryInfos.DoForEach(DeleteDirectory);
+        }
+
+        private void RaiseOkCommandCanExecuteChanged()
+        {
+            var relayCommand = OkCommand as RelayCommand;
+            if (relayCommand != null)
+            {
+                relayCommand.RaiseCanExecuteChanged();
+            }
+        }
+
         private void OnScriptPathChanged()
         {
             if (ScriptPath.IsNullOrWhiteSpace())
@@ -215,13 +340,85 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return;
             }
 
-            var recordLogItems = GetRecordLogItems(scriptDirectory.EnsureNotNull());
-            var recordLogSize = GetSize(recordLogItems);
-            RecordingLogSizeString = recordLogSize.FormatFileSize();
+            var recordingLogItems = GetRecordingLogItems(scriptDirectory.EnsureNotNull());
+            var recordingLogSize = GetSize(recordingLogItems);
+            RecordingLogSizeString = recordingLogSize.FormatFileSize();
 
             var replayLogItems = GetReplayLogItems(scriptDirectory.EnsureNotNull());
             var replayLogSize = GetSize(replayLogItems);
             ReplayLogSizeString = replayLogSize.FormatFileSize();
+        }
+
+        private void OnShouldRemoveRecordingLogsChanged()
+        {
+            RaiseOkCommandCanExecuteChanged();
+        }
+
+        private void OnShouldRemoveReplayLogsChanged()
+        {
+            RaiseOkCommandCanExecuteChanged();
+        }
+
+        private void RaiseActionExecuted(bool logicExecuted, long totalSize, Exception exception)
+        {
+            var handler = ActionExecuted;
+            if (handler != null)
+            {
+                handler(logicExecuted, totalSize, exception);
+            }
+        }
+
+        private void ExecuteLogic()
+        {
+            if (ScriptPath.IsNullOrWhiteSpace())
+            {
+                RaiseActionExecuted(true, 0, null);
+                return;
+            }
+
+            var scriptDirectory = Path.GetDirectoryName(ScriptPath);
+            if (scriptDirectory.IsNullOrWhiteSpace())
+            {
+                RaiseActionExecuted(true, 0, null);
+                return;
+            }
+
+            long totalSize;
+            try
+            {
+                var items = new List<FileSystemInfo>();
+                if (ShouldRemoveRecordingLogs)
+                {
+                    var recordingLogItems = GetRecordingLogItems(scriptDirectory.EnsureNotNull());
+                    items.AddRange(recordingLogItems);
+                }
+
+                if (ShouldRemoveReplayLogs)
+                {
+                    var replayLogItems = GetReplayLogItems(scriptDirectory.EnsureNotNull());
+                    items.AddRange(replayLogItems);
+                }
+
+                totalSize = GetSize(items);
+                DeleteItems(items);
+            }
+            catch (Exception ex)
+            {
+                if (ex.IsFatal())
+                {
+                    throw;
+                }
+
+                Trace.TraceError(
+                    "[{0}] Error has occurred: {1}",
+                    MethodBase.GetCurrentMethod().GetQualifiedName(),
+                    ex);
+
+                RaiseActionExecuted(true, 0, ex);
+                return;
+            }
+
+            RaiseActionExecuted(true, totalSize, null);
         }
 
         #endregion
