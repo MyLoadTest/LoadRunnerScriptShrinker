@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:self="clr-namespace:MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn"
-        Title="Remove Unwanted Files" MinWidth="400" MinHeight="163" ResizeMode="NoResize" ShowInTaskbar="False"
+        Title="Remove Unwanted Files" MinWidth="400" MinHeight="163" MaxWidth="600"
+        ResizeMode="NoResize" ShowInTaskbar="False"
         SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Margin="0"
         Icon="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/RemoveUnwantedFilesIcon.ico"
         FocusManager.FocusedElement="{Binding ElementName=ScriptPathTextBox}">
@@ -56,12 +57,13 @@
                 Style="{StaticResource ControlStyle}" />
         <TextBox Grid.Row="0" Grid.Column="1" Name="ScriptPathTextBox" Style="{StaticResource ControlStyle}"
                 Text="{Binding ScriptPath,Mode=OneWay}" IsReadOnly="True" IsReadOnlyCaretVisible="True"
-                TextWrapping="NoWrap" AcceptsReturn="False"
-                MaxLines="1" Background="{x:Static SystemColors.InactiveCaptionBrush}" />
+                TextWrapping="NoWrap" AcceptsReturn="False" TextAlignment="Left"
+                MaxLines="1" Background="{x:Static SystemColors.InactiveCaptionBrush}">
+        </TextBox>
 
         <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                 IsChecked="{Binding ShouldRemoveRecordingLogs,Mode=TwoWay}"
-                Style="{StaticResource ControlStyle}">
+                Style="{StaticResource ControlStyle}" HorizontalAlignment="Left">
             <CheckBox.Content>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Remove _Recording logs (size: " Style="{StaticResource InnerControlStyle}"
@@ -75,7 +77,7 @@
 
         <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                 IsChecked="{Binding ShouldRemoveReplayLogs,Mode=TwoWay}"
-                Style="{StaticResource ControlStyle}">
+                Style="{StaticResource ControlStyle}" HorizontalAlignment="Left">
             <CheckBox.Content>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Remove Re_play logs (size: " Style="{StaticResource InnerControlStyle}"

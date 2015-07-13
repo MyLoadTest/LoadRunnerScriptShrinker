@@ -63,7 +63,10 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
             OnScriptPathChanged();
 
-            PropertyPersistor.LoadProperties(this);
+            if (!WpfHelper.IsInDesignMode())
+            {
+                PropertyPersistor.LoadProperties(this);
+            }
         }
 
         #endregion
