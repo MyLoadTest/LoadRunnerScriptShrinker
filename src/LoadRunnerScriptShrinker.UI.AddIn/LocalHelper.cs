@@ -25,7 +25,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             if (size < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "size",
+                    nameof(size),
                     size,
                     @"The value cannot be negative.");
             }

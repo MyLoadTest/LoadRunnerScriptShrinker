@@ -23,7 +23,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands
         {
             if (execute == null)
             {
-                throw new ArgumentNullException("execute");
+                throw new ArgumentNullException(nameof(execute));
             }
 
             _execute = execute;
@@ -67,11 +67,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands
 
         private void RaiseCanExecuteChangedInternal()
         {
-            var handler = CanExecuteChanged;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion

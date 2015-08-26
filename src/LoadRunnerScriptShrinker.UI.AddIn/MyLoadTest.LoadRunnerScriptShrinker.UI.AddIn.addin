@@ -4,6 +4,7 @@
         description="A VuGen add-in for removing unwanted files from LoadRunner scripts">
     <Runtime>
         <Import assembly="Omnifactotum.dll" />
+        <Import assembly="Omnifactotum.Wpf.dll" />
         <Import assembly="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.dll" />
     </Runtime>
 

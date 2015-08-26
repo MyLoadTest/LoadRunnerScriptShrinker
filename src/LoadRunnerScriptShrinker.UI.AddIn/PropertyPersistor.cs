@@ -38,7 +38,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
             if (propertyGetterExpression == null)
             {
-                throw new ArgumentNullException("propertyGetterExpression");
+                throw new ArgumentNullException(nameof(propertyGetterExpression));
             }
 
             #endregion
@@ -51,7 +51,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                         CultureInfo.InvariantCulture,
                         @"The property must be both readable and writable ({0}).",
                         propertyInfo.Name),
-                    "propertyGetterExpression");
+                    nameof(propertyGetterExpression));
             }
 
             var key = GetPropertyKey(propertyInfo);
@@ -71,7 +71,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
             if (@object == null)
             {
-                throw new ArgumentNullException("object");
+                throw new ArgumentNullException(nameof(@object));
             }
 
             #endregion
@@ -88,7 +88,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
             if (@object == null)
             {
-                throw new ArgumentNullException("object");
+                throw new ArgumentNullException(nameof(@object));
             }
 
             #endregion
