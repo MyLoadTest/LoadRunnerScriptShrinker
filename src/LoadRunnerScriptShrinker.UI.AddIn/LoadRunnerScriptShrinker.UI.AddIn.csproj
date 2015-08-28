@@ -110,6 +110,8 @@
     <Content Include="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\Refresh.png" />
+    <Resource Include="Resources\ItemWarning.png" />
     <Resource Include="Resources\ItemError.png" />
     <Resource Include="Resources\ItemSuccess.png" />
     <Resource Include="Resources\RemoveUnwantedFilesIcon.ico" />

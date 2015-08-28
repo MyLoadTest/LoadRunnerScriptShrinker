@@ -63,26 +63,6 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap ItemError {
-            get {
-                object obj = ResourceManager.GetObject("ItemError", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap ItemSuccess {
-            get {
-                object obj = ResourceManager.GetObject("ItemSuccess", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap RemoveUnwantedFilesIcon {
             get {
                 object obj = ResourceManager.GetObject("RemoveUnwantedFilesIcon", resourceCulture);

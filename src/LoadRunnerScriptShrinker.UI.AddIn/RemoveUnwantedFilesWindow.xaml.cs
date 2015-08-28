@@ -13,6 +13,16 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             InitializeComponent();
 
             ViewModel.Closed += (sender, args) => DialogResult = true;
+
+            ViewModel.ActionCompleted +=
+                (sender, args) =>
+                {
+                    var currentItem = ViewModel.LogRecords.CurrentItem;
+                    if (currentItem != null)
+                    {
+                        LogDataGrid.ScrollIntoView(currentItem);
+                    }
+                };
         }
 
         #endregion

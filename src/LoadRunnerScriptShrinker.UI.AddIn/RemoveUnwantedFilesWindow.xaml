@@ -3,14 +3,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:self="clr-namespace:MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn"
         xmlns:converters="clr-namespace:MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Converters"
-        Title="Remove Unwanted Files" MinWidth="400" MinHeight="250" MaxWidth="600"
-        ResizeMode="NoResize" ShowInTaskbar="False"
-        SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Margin="0"
+        Title="Remove Unwanted Files" MinWidth="400" MinHeight="250"
+        ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+        SizeToContent="Manual" WindowStartupLocation="CenterOwner" Margin="0"
         Icon="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/RemoveUnwantedFilesIcon.ico"
         FocusManager.FocusedElement="{Binding ElementName=ScriptPathTextBox}">
     <Window.DataContext>
         <self:RemoveUnwantedFilesWindowViewModel x:Name="ViewModel" />
     </Window.DataContext>
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding RefreshCommand}" Key="F5" />
+        <KeyBinding Command="{Binding DeleteCommand}" Modifiers="Control" Key="Enter" />
+        <KeyBinding Command="{Binding CloseCommand}" Modifiers="Shift" Key="Escape" />
+    </Window.InputBindings>
     <Window.Resources>
         <Style x:Key="ElementStyle" TargetType="{x:Type FrameworkElement}">
             <Setter Property="Margin" Value="5,1,5,1" />
@@ -43,17 +48,19 @@
         <converters:LogRecordTypeToBitmapImageConverter x:Key="LogRecordTypeToBitmapImageConverter">
             <BitmapImage x:Key="{x:Static self:LogRecordType.Info}"
                     UriSource="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/ItemSuccess.png" />
+            <BitmapImage x:Key="{x:Static self:LogRecordType.Warning}"
+                    UriSource="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/ItemWarning.png" />
             <BitmapImage x:Key="{x:Static self:LogRecordType.Error}"
                     UriSource="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/ItemError.png" />
         </converters:LogRecordTypeToBitmapImageConverter>
     </Window.Resources>
-    <Grid HorizontalAlignment="Stretch" Margin="10">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -61,6 +68,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <Label Grid.Row="0" Grid.Column="0" Content="_Script" Target="{Binding ElementName=ScriptPathTextBox}"
@@ -69,8 +77,12 @@
                 Text="{Binding ScriptPath,Mode=OneWay}" IsReadOnly="True" IsReadOnlyCaretVisible="True"
                 TextWrapping="NoWrap" AcceptsReturn="False" TextAlignment="Left"
                 MaxLines="1" Background="{x:Static SystemColors.ControlBrush}" />
+        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource ControlStyle}" Command="{Binding RefreshCommand}">
+            <Image Stretch="None" ToolTip="Refresh" Width="18" Height="18"
+                    Source="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/Refresh.png" />
+        </Button>
 
-        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                 IsChecked="{Binding ShouldRemoveRecordingLogs,Mode=TwoWay}"
                 Style="{StaticResource ControlStyle}" HorizontalAlignment="Left">
             <CheckBox.Content>
@@ -84,7 +96,7 @@
             </CheckBox.Content>
         </CheckBox>
 
-        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
                 IsChecked="{Binding ShouldRemoveReplayLogs,Mode=TwoWay}"
                 Style="{StaticResource ControlStyle}" HorizontalAlignment="Left">
             <CheckBox.Content>
@@ -98,11 +110,11 @@
             </CheckBox.Content>
         </CheckBox>
 
-        <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" />
+        <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" />
 
-        <DataGrid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Height="120" IsReadOnly="True"
-                ItemsSource="{Binding LogRecords}" AutoGenerateColumns="False" HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch" HeadersVisibility="None">
+        <DataGrid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Name="LogDataGrid" MinHeight="120" IsReadOnly="True"
+                ItemsSource="{Binding LogRecords}" IsSynchronizedWithCurrentItem="True" AutoGenerateColumns="False"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HeadersVisibility="None">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="18" CanUserResize="False" CanUserReorder="False" CanUserSort="False">
                     <DataGridTemplateColumn.CellTemplate>
@@ -122,9 +134,9 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Separator Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" />
+        <Separator Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" />
 
-        <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal"
+        <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal"
                 HorizontalAlignment="Right">
             <Button Content="Delete" IsDefault="True" Command="{Binding DeleteCommand}" />
             <Button Content="Close" Margin="10,0,0,0" IsCancel="True" Command="{Binding CloseCommand}" />

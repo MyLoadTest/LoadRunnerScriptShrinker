@@ -12,12 +12,12 @@ using System.Windows.Data;
 using MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Commands;
 using Omnifactotum.Annotations;
 using Omnifactotum.Wpf;
-using static
-    Omnifactotum.Wpf.WpfFactotum.For<MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.RemoveUnwantedFilesWindowViewModel>;
 using ICommand = System.Windows.Input.ICommand;
 
 namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 {
+    using static WpfFactotum.For<RemoveUnwantedFilesWindowViewModel>;
+
     internal sealed class RemoveUnwantedFilesWindowViewModel : DependencyObject
     {
         #region Constants and Fields
@@ -45,7 +45,11 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             RegisterDependencyProperty(
                 obj => obj.ReplayLogSizeString);
 
-        private static readonly DependencyPropertyKey OkCommandPropertyKey =
+        private static readonly DependencyPropertyKey RefreshCommandPropertyKey =
+            RegisterReadOnlyDependencyProperty(
+                obj => obj.RefreshCommand);
+
+        private static readonly DependencyPropertyKey DeleteCommandPropertyKey =
             RegisterReadOnlyDependencyProperty(
                 obj => obj.DeleteCommand);
 
@@ -67,6 +71,8 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             _logRecordsInternal = new ObservableCollection<LogRecord>();
             LogRecords = new CollectionView(_logRecordsInternal);
 
+            RefreshCommand = new RelayCommand(obj => RefreshInformation());
+
             DeleteCommand = new RelayCommand(
                 obj => ExecuteDeleteCommand(),
                 obj => ShouldRemoveRecordingLogs || ShouldRemoveReplayLogs);
@@ -85,18 +91,29 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
         #region Events
 
+        public event EventHandler ActionCompleted;
+
         public event EventHandler Closed;
 
         #endregion
 
         #region Public Properties
 
-        public static DependencyProperty OkCommandProperty
+        public static DependencyProperty RefreshCommandProperty
         {
             [DebuggerNonUserCode]
             get
             {
-                return OkCommandPropertyKey.DependencyProperty;
+                return RefreshCommandPropertyKey.DependencyProperty;
+            }
+        }
+
+        public static DependencyProperty DeleteCommandProperty
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return DeleteCommandPropertyKey.DependencyProperty;
             }
         }
 
@@ -179,19 +196,31 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
         public CollectionView LogRecords
         {
             get;
-            private set;
+        }
+
+        public ICommand RefreshCommand
+        {
+            get
+            {
+                return (ICommand)GetValue(RefreshCommandProperty);
+            }
+
+            private set
+            {
+                SetValue(RefreshCommandPropertyKey, value);
+            }
         }
 
         public ICommand DeleteCommand
         {
             get
             {
-                return (ICommand)GetValue(OkCommandProperty);
+                return (ICommand)GetValue(DeleteCommandProperty);
             }
 
             private set
             {
-                SetValue(OkCommandPropertyKey, value);
+                SetValue(DeleteCommandPropertyKey, value);
             }
         }
 
@@ -321,27 +350,35 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             return fileSystemInfos.Count == 0 ? 0 : fileSystemInfos.OfType<FileInfo>().Sum(obj => obj.Length);
         }
 
-        private void DeleteFile(FileInfo info)
+        private static bool IsFileOperationException(Exception ex)
         {
+            return ex is IOException || ex is SecurityException || ex is UnauthorizedAccessException
+                || ex is ArgumentException;
+        }
+
+        private long DeleteFile(FileInfo info)
+        {
+            long fileSize;
             try
             {
                 info.Refresh();
                 if (!info.Exists)
                 {
-                    return;
+                    return 0;
                 }
 
+                fileSize = info.Length;
                 info.Attributes = FileAttributes.Normal;
                 info.Delete();
             }
-            catch (Exception ex)
-                when (ex is IOException || ex is SecurityException || ex is UnauthorizedAccessException)
+            catch (Exception ex) when (IsFileOperationException(ex))
             {
                 AddLogRecord(LogRecordType.Error, @"Unable to delete file ""{0}"": {1}", info.FullName, ex.Message);
-                return;
+                return 0;
             }
 
             AddLogRecord(LogRecordType.Info, @"File ""{0}"" has been deleted.", info.FullName);
+            return fileSize;
         }
 
         private void DeleteDirectory(DirectoryInfo info)
@@ -356,8 +393,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
 
                 info.Delete(true);
             }
-            catch (Exception ex)
-                when (ex is IOException || ex is SecurityException || ex is UnauthorizedAccessException)
+            catch (Exception ex) when (IsFileOperationException(ex))
             {
                 AddLogRecord(
                     LogRecordType.Error,
@@ -371,13 +407,15 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             AddLogRecord(LogRecordType.Info, @"Directory ""{0}"" has been deleted.", info.FullName);
         }
 
-        private void DeleteItems([NotNull] ICollection<FileSystemInfo> fileSystemInfos)
+        private long DeleteItems([NotNull] ICollection<FileSystemInfo> fileSystemInfos)
         {
             var fileInfos = fileSystemInfos.OfType<FileInfo>().ToArray();
-            fileInfos.DoForEach(DeleteFile);
+            var totalDeletedFileSize = fileInfos.Sum(info => DeleteFile(info));
 
             var directoryInfos = fileSystemInfos.OfType<DirectoryInfo>().ToArray();
             directoryInfos.DoForEach(DeleteDirectory);
+
+            return totalDeletedFileSize;
         }
 
         private void RaiseDeleteCommandCanExecuteChanged()
@@ -446,6 +484,8 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
         {
             ExecuteDeleteCommandInternal();
             RefreshInformation();
+            LogRecords.MoveCurrentToLast();
+            RaiseActionCompleted();
         }
 
         private void ExecuteDeleteCommandInternal()
@@ -467,7 +507,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return;
             }
 
-            long totalSize;
+            long totalDeletedFileSize;
             try
             {
                 var items = new List<FileSystemInfo>();
@@ -483,8 +523,7 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                     items.AddRange(replayLogItems);
                 }
 
-                totalSize = GetTotalSize(items);
-                DeleteItems(items);
+                totalDeletedFileSize = DeleteItems(items);
             }
             catch (Exception ex)
             {
@@ -502,15 +541,30 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return;
             }
 
-            AddLogRecord(
-                LogRecordType.Info,
-                "The selected files have been removed (size: {0}).",
-                totalSize.FormatFileSize());
+            if (_logRecordsInternal.Any(record => record.Type == LogRecordType.Error))
+            {
+                AddLogRecord(
+                    LogRecordType.Warning,
+                    "The selected files have been deleted (size: {0}). However, one or more errors occurred.",
+                    totalDeletedFileSize.FormatFileSize());
+            }
+            else
+            {
+                AddLogRecord(
+                    LogRecordType.Info,
+                    "The selected files have been deleted (size: {0}).",
+                    totalDeletedFileSize.FormatFileSize());
+            }
         }
 
         private void ExecuteCloseCommand(object obj)
         {
             Closed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void RaiseActionCompleted()
+        {
+            ActionCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion
