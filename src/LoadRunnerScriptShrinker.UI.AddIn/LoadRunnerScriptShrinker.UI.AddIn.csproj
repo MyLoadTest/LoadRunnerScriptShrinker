@@ -84,6 +84,10 @@
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
+    <Reference Include="Xceed.Wpf.Toolkit, Version=2.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.5\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\RelayCommand.cs" />
@@ -159,6 +163,7 @@ if exist "%25ADDIN_TARGET_PATH%25" (
 @echo * Copying the add-in to target directory "%25ADDIN_TARGET_PATH%25".
 xcopy /f /g /h /r /y "$(TargetDir)\MyLoadTest.*" "%25ADDIN_TARGET_PATH%25\" || @exit 2
 xcopy /f /g /h /r /y "$(TargetDir)\Omnifactotum.*" "%25ADDIN_TARGET_PATH%25\" || @exit 3
+xcopy /f /g /h /r /y "$(TargetDir)\Xceed.Wpf.Toolkit.*" "%25ADDIN_TARGET_PATH%25\" || @exit 4
 @echo * Copying the add-in to target directory - DONE.
 @echo.
 </PostBuildEvent>

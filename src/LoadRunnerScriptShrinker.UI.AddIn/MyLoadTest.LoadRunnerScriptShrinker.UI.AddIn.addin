@@ -5,6 +5,7 @@
     <Runtime>
         <Import assembly="Omnifactotum.dll" />
         <Import assembly="Omnifactotum.Wpf.dll" />
+        <Import assembly="Xceed.Wpf.Toolkit.dll" />
         <Import assembly="MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.dll" />
     </Runtime>
 

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:self="clr-namespace:MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn"
         xmlns:converters="clr-namespace:MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Converters"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         Title="Remove Unwanted Files" MinWidth="400" MinHeight="250"
         ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
         SizeToContent="Manual" WindowStartupLocation="CenterOwner" Margin="0"
@@ -45,6 +46,9 @@
             <Setter Property="MinWidth" Value="80" />
         </Style>
 
+        <Brush x:Key="RecordingLogPieBrush">Red</Brush>
+        <Brush x:Key="ReplayLogPieBrush">Green</Brush>
+
         <converters:LogRecordTypeToBitmapImageConverter x:Key="LogRecordTypeToBitmapImageConverter">
             <BitmapImage x:Key="{x:Static self:LogRecordType.Info}"
                     UriSource="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/ItemSuccess.png" />
@@ -53,8 +57,30 @@
             <BitmapImage x:Key="{x:Static self:LogRecordType.Error}"
                     UriSource="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/ItemError.png" />
         </converters:LogRecordTypeToBitmapImageConverter>
+
+        <Style x:Key="PieStyle" TargetType="xctk:Pie">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Mode" Value="Slice" />
+            <Setter Property="Stretch" Value="Fill" />
+            <Setter Property="Stroke" Value="Gray" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="StartAngle" Value="0" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+        </Style>
+
+        <Style x:Key="PieLegendRectangleStyle" TargetType="Rectangle">
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Height" Value="12" />
+            <Setter Property="Margin" Value="5,1,5,1" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
     </Window.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10">
+        <Grid.Resources>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -82,7 +108,7 @@
                     Source="pack://application:,,,/MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn;component/Resources/Refresh.png" />
         </Button>
 
-        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                 IsChecked="{Binding ShouldRemoveRecordingLogs,Mode=TwoWay}"
                 Style="{StaticResource ControlStyle}" HorizontalAlignment="Left">
             <CheckBox.Content>
@@ -92,11 +118,21 @@
                     <TextBlock Text="{Binding RecordingLogSizeString}" Style="{StaticResource InnerElementStyle}"
                             FontWeight="Bold" />
                     <TextBlock Text=")" Style="{StaticResource InnerElementStyle}" />
+                    <Rectangle Fill="{StaticResource RecordingLogPieBrush}"
+                            Style="{StaticResource PieLegendRectangleStyle}" />
                 </StackPanel>
             </CheckBox.Content>
         </CheckBox>
 
-        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+        <xctk:Pie Grid.Row="1" Grid.Column="2" Grid.RowSpan="2" Style="{StaticResource PieStyle}"
+                Fill="{StaticResource RecordingLogPieBrush}" Slice="{Binding RecordingLogRatio,Mode=OneWay}"
+                SweepDirection="Counterclockwise" />
+
+        <xctk:Pie Grid.Row="1" Grid.Column="2" Grid.RowSpan="2" Style="{StaticResource PieStyle}"
+                Fill="{StaticResource ReplayLogPieBrush}" Slice="{Binding ReplayLogSizeRatio,Mode=OneWay}"
+                SweepDirection="Clockwise" />
+
+        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                 IsChecked="{Binding ShouldRemoveReplayLogs,Mode=TwoWay}"
                 Style="{StaticResource ControlStyle}" HorizontalAlignment="Left">
             <CheckBox.Content>
@@ -106,6 +142,8 @@
                     <TextBlock Text="{Binding ReplayLogSizeString}" FontWeight="Bold"
                             Style="{StaticResource InnerElementStyle}" />
                     <TextBlock Text=")" Style="{StaticResource InnerElementStyle}" />
+                    <Rectangle Fill="{StaticResource ReplayLogPieBrush}"
+                            Style="{StaticResource PieLegendRectangleStyle}" />
                 </StackPanel>
             </CheckBox.Content>
         </CheckBox>

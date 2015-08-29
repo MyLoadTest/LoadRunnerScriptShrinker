@@ -28,6 +28,11 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn.Converters
                 throw new ArgumentException(@"Invalid target type.", nameof(targetType));
             }
 
+            if (ConversionMap == null)
+            {
+                throw new InvalidOperationException(@"The conversion map is not initialized.");
+            }
+
             var castValue = (TSource)value;
             return ConversionMap[castValue];
         }

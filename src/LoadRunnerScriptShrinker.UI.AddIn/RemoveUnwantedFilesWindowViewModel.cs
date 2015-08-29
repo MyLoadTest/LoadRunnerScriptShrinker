@@ -32,30 +32,31 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 obj => obj.ShouldRemoveRecordingLogs,
                 new PropertyMetadata(OnShouldRemoveRecordingLogsChangedInternal));
 
-        public static readonly DependencyProperty RecordingLogSizeStringProperty =
-            RegisterDependencyProperty(
-                obj => obj.RecordingLogSizeString);
-
         public static readonly DependencyProperty ShouldRemoveReplayLogsProperty =
             RegisterDependencyProperty(
                 obj => obj.ShouldRemoveReplayLogs,
                 new PropertyMetadata(OnShouldRemoveReplayLogsChangedInternal));
 
-        public static readonly DependencyProperty ReplayLogSizeStringProperty =
-            RegisterDependencyProperty(
-                obj => obj.ReplayLogSizeString);
+        private static readonly DependencyPropertyKey RecordingLogRatioPropertyKey =
+            RegisterReadOnlyDependencyProperty(obj => obj.RecordingLogRatio);
+
+        private static readonly DependencyPropertyKey ReplayLogSizeRatioPropertyKey =
+            RegisterReadOnlyDependencyProperty(obj => obj.ReplayLogSizeRatio);
+
+        private static readonly DependencyPropertyKey ReplayLogSizeStringPropertyKey =
+            RegisterReadOnlyDependencyProperty(obj => obj.ReplayLogSizeString);
+
+        private static readonly DependencyPropertyKey RecordingLogSizeStringPropertyKey =
+            RegisterReadOnlyDependencyProperty(obj => obj.RecordingLogSizeString);
 
         private static readonly DependencyPropertyKey RefreshCommandPropertyKey =
-            RegisterReadOnlyDependencyProperty(
-                obj => obj.RefreshCommand);
+            RegisterReadOnlyDependencyProperty(obj => obj.RefreshCommand);
 
         private static readonly DependencyPropertyKey DeleteCommandPropertyKey =
-            RegisterReadOnlyDependencyProperty(
-                obj => obj.DeleteCommand);
+            RegisterReadOnlyDependencyProperty(obj => obj.DeleteCommand);
 
         private static readonly DependencyPropertyKey CancelCommandPropertyKey =
-            RegisterReadOnlyDependencyProperty(
-                obj => obj.CloseCommand);
+            RegisterReadOnlyDependencyProperty(obj => obj.CloseCommand);
 
         private static readonly PropertyPersistor<RemoveUnwantedFilesWindowViewModel> PropertyPersistor =
             CreateAndInitializePropertyPersistor();
@@ -98,6 +99,42 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
         #endregion
 
         #region Public Properties
+
+        public static DependencyProperty RecordingLogRatioProperty
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return RecordingLogRatioPropertyKey.DependencyProperty;
+            }
+        }
+
+        public static DependencyProperty ReplayLogSizeRatioProperty
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return ReplayLogSizeRatioPropertyKey.DependencyProperty;
+            }
+        }
+
+        public static DependencyProperty RecordingLogSizeStringProperty
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return RecordingLogSizeStringPropertyKey.DependencyProperty;
+            }
+        }
+
+        public static DependencyProperty ReplayLogSizeStringProperty
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return ReplayLogSizeStringPropertyKey.DependencyProperty;
+            }
+        }
 
         public static DependencyProperty RefreshCommandProperty
         {
@@ -146,23 +183,9 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return (bool)GetValue(ShouldRemoveRecordingLogsProperty);
             }
 
-            [UsedImplicitly]
-            private set
-            {
-                SetValue(ShouldRemoveRecordingLogsProperty, value);
-            }
-        }
-
-        public string RecordingLogSizeString
-        {
-            get
-            {
-                return (string)GetValue(RecordingLogSizeStringProperty);
-            }
-
             set
             {
-                SetValue(RecordingLogSizeStringProperty, value);
+                SetValue(ShouldRemoveRecordingLogsProperty, value);
             }
         }
 
@@ -173,10 +196,48 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return (bool)GetValue(ShouldRemoveReplayLogsProperty);
             }
 
-            [UsedImplicitly]
-            private set
+            set
             {
                 SetValue(ShouldRemoveReplayLogsProperty, value);
+            }
+        }
+
+        public double RecordingLogRatio
+        {
+            get
+            {
+                return (double)GetValue(RecordingLogRatioProperty);
+            }
+
+            private set
+            {
+                SetValue(RecordingLogRatioPropertyKey, value);
+            }
+        }
+
+        public double ReplayLogSizeRatio
+        {
+            get
+            {
+                return (double)GetValue(ReplayLogSizeRatioProperty);
+            }
+
+            private set
+            {
+                SetValue(ReplayLogSizeRatioPropertyKey, value);
+            }
+        }
+
+        public string RecordingLogSizeString
+        {
+            get
+            {
+                return (string)GetValue(RecordingLogSizeStringProperty);
+            }
+
+            private set
+            {
+                SetValue(RecordingLogSizeStringPropertyKey, value);
             }
         }
 
@@ -187,9 +248,9 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
                 return (string)GetValue(ReplayLogSizeStringProperty);
             }
 
-            set
+            private set
             {
-                SetValue(ReplayLogSizeStringProperty, value);
+                SetValue(ReplayLogSizeStringPropertyKey, value);
             }
         }
 
@@ -424,27 +485,45 @@ namespace MyLoadTest.LoadRunnerScriptShrinker.UI.AddIn
             relayCommand?.RaiseCanExecuteChanged();
         }
 
+        private void ResetSizeInfoToNotAvailable()
+        {
+            RecordingLogSizeString = ReplayLogSizeString = "?";
+            RecordingLogRatio = ReplayLogSizeRatio = 0;
+        }
+
         private void RefreshInformation()
         {
             if (ScriptPath.IsNullOrWhiteSpace())
             {
-                RecordingLogSizeString = ReplayLogSizeString = "?";
+                ResetSizeInfoToNotAvailable();
                 return;
             }
 
             var scriptDirectory = Path.GetDirectoryName(ScriptPath);
             if (scriptDirectory.IsNullOrWhiteSpace())
             {
-                RecordingLogSizeString = ReplayLogSizeString = "?";
+                ResetSizeInfoToNotAvailable();
                 return;
             }
 
             var recordingLogItems = GetRecordingLogItems(scriptDirectory.EnsureNotNull());
             var recordingLogSize = GetTotalSize(recordingLogItems);
-            RecordingLogSizeString = recordingLogSize.FormatFileSize();
 
             var replayLogItems = GetReplayLogItems(scriptDirectory.EnsureNotNull());
             var replayLogSize = GetTotalSize(replayLogItems);
+
+            var overallSize = recordingLogSize + replayLogSize;
+            if (overallSize == 0)
+            {
+                RecordingLogRatio = ReplayLogSizeRatio = 0;
+            }
+            else
+            {
+                RecordingLogRatio = (double)recordingLogSize / overallSize;
+                ReplayLogSizeRatio = 1d - RecordingLogRatio;
+            }
+
+            RecordingLogSizeString = recordingLogSize.FormatFileSize();
             ReplayLogSizeString = replayLogSize.FormatFileSize();
         }
 
